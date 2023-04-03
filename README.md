@@ -1,5 +1,5 @@
 # Device Drivers
-This repository contains a collection of device drivers written in C. The drivers are intended for use with the Linux kernel.
+This repository contains a test device driver written in C. The drivers are intended for use with the Linux kernel.
 
 # Installation
 To install the device drivers, clone the repository to your local machine:
