@@ -13,3 +13,6 @@ This will compile the drivers and generate the necessary kernel modules.
 To use the device drivers, load the kernel modules into the running kernel using the insmod command. For example:
 ##### sudo insmod mydriver.ko
 Once the module is loaded, you can interact with the device using standard system calls such as open(), read(), write(), and close().
+
+# Credits
+This repo is based on the YouTube playlist created by Eng. Moatassem Elsayed.
