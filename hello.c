@@ -8,14 +8,34 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Hussam ");
 MODULE_DESCRIPTION("A hello world Pseudo device driver"); 
 
-
+#define SIZE 255
 dev_t device_number;
 struct cdev st_characterDevice;
 struct class *myClass;
 struct device *myDevice;
+static unsigned char buffer[SIZE]="This is a message from the driver";
+
 ssize_t driver_read(struct file *file, char __user *userBuffer, size_t count, loff_t *offset)
 {
-    printk("Driver read is called right now\n");
+    int not_copied;
+    //printk("Driver read is called right now\n");
+    printk("%s: the count to read %ld\n", __func__, count);
+    printk("%s: the offset %lld\n", __func__, *offset);
+    /* we need to check if the user wants more that the size or not */
+    /* This if condition guarantees that the count never exceeds the size of the buffer */
+    if(count + (*offset) > SIZE)
+    {
+        count = SIZE - (*offset);
+    }
+    /* Returns number of not copied bytes */
+    not_copied = copy_to_user(userBuffer, &buffer[*offset], count);
+    if(not_copied)
+    {
+        return -1;
+    }
+    *offset = count; //update offset to ensure that it starts reading from the last known location
+    printk("%s: number of not copied bytes: %ld\n", __func__, not_copied);
+    printk("%s: message: %s\n", __func__, userBuffer);
     return 0;
 }
 

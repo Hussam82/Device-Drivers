@@ -17,7 +17,7 @@ make
 sudo insmod hello.ko
 sudo chmod 777 /dev/test_file
 cat /dev/test_file
-dmesg
+sudo dmesg
 ;;
 esac
 
