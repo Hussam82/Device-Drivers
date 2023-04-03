@@ -8,12 +8,50 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Hussam ");
 MODULE_DESCRIPTION("A hello world Pseudo device driver"); 
 
-#define SIZE 255
+#define SIZE 15
 dev_t device_number;
 struct cdev st_characterDevice;
 struct class *myClass;
 struct device *myDevice;
-static unsigned char buffer[SIZE]="This is a message from the driver";
+static unsigned char buffer[SIZE]="";
+
+
+// echo "hello world from Egypt" > /dev/test_file --> writes hello in buffer
+ssize_t driver_write(struct file *file, const char __user *userBuffer, size_t count, loff_t *offset)
+{
+    // adjust count
+    // copy from userspace to kernel space
+    // adjust offset
+    // return successfully written bytes
+
+    int not_copied;
+    printk("%s: the count to write %ld\n", __func__, count);
+    printk("%s: the offset %lld\n", __func__, *offset);
+    /* we need to check if the user wants more that the size or not */
+    /* This if condition guarantees that the count never exceeds the size of the buffer */
+    if(count + (*offset) > SIZE)
+    {
+        count = SIZE - (*offset);
+    }
+    if(!count) // no more memory space left to guarantee that user won't write in a space outside the buffer space
+    {
+        printk("No space left");
+        return -1;
+    }
+    /* Returns number of not copied bytes */
+    not_copied = copy_from_user(&buffer[*offset], userBuffer, count);
+    if(not_copied)
+    {
+        return -1;
+    }
+    *offset = count; //update offset to ensure that it starts reading from the last known location
+    printk("%s: number of written bytes: %ld\n", __func__, count);
+    printk("%s: message: %s\n", __func__, buffer);
+    return count; // return number of successfully read bytes
+}
+
+
+
 
 ssize_t driver_read(struct file *file, char __user *userBuffer, size_t count, loff_t *offset)
 {
@@ -34,9 +72,9 @@ ssize_t driver_read(struct file *file, char __user *userBuffer, size_t count, lo
         return -1;
     }
     *offset = count; //update offset to ensure that it starts reading from the last known location
-    printk("%s: number of not copied bytes: %ld\n", __func__, not_copied);
+    printk("%s: number of not copied bytes: %d\n", __func__, not_copied);
     printk("%s: message: %s\n", __func__, userBuffer);
-    return 0;
+    return count; // return number of successfully read bytes
 }
 
 
@@ -52,12 +90,17 @@ static int driver_close(struct inode *device_file, struct file *instance)
     return 0;   
 }
 
+
+
+
+
 struct file_operations fops = 
 {
     .owner=THIS_MODULE,
     .open=driver_open,
     .release=driver_close,
-    .read=driver_read
+    .read=driver_read,
+    .write=driver_write
 };
 
 
