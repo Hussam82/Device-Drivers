@@ -53,39 +53,33 @@ static int __init hellodriver_init(void)
     retval = cdev_add(&st_characterDevice, device_number, 1);
     if(retval != 0)
     {
-        printk("Registering the device to the kernel failed!\n");
         /* In case of failure, you have to delete everything made before */
-        goto CHARACTER_ERROR;
-
+        unregister_chrdev_region(device_number, 1);
+        printk("Registering the device to the kernel failed!\n");
+        return -1;
     }
     // 3- generate file (class - device)
     if( (myClass = class_create(THIS_MODULE, "test_class")) == NULL )
     {
-        printk("Device class can not be created!\n");
         /* In case of failure, you have to delete everything made before */
-        goto CLASS_ERROR;
+        printk("Device class can not be created!\n");
+        cdev_del(&st_characterDevice);
+        unregister_chrdev_region(device_number, 1);
+        return -1;
     }
     myDevice = device_create(myClass, NULL, device_number, NULL, "test_file");
     if(myDevice == NULL)
     {
-        printk("Device can not be created!\n");
         /* In case of failure, you have to delete everything made before */
-        goto DEVICE_ERROR;
-
+        printk("Device can not be created!\n");
+        class_destroy(myClass);
+        cdev_del(&st_characterDevice);
+        unregister_chrdev_region(device_number, 1);
+        return -1;
     }
     printk("Device Driver is created successfully !\n");
     return 0;
-    
-DEVICE_ERROR:
-    class_destroy(myClass);
-CLASS_ERROR:
-    cdev_del(&st_characterDevice);
-CHARACTER_ERROR:
-    unregister_chrdev_region(device_number, 1);
-    return -1;
 }
-
-
 
 static void __exit hellodriver_exit(void)
 {
