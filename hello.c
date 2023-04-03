@@ -13,6 +13,14 @@ dev_t device_number;
 struct cdev st_characterDevice;
 struct class *myClass;
 struct device *myDevice;
+ssize_t driver_read(struct file *file, char __user *userBuffer, size_t count, loff_t *offset)
+{
+    printk("Driver read is called right now\n");
+    return 0;
+}
+
+
+
 static int driver_open(struct inode *device_file, struct file *instance)
 {
     printk("%s mytest_driver - open was called", __FUNCTION__);
@@ -28,7 +36,8 @@ struct file_operations fops =
 {
     .owner=THIS_MODULE,
     .open=driver_open,
-    .release=driver_close
+    .release=driver_close,
+    .read=driver_read
 };
 
 
